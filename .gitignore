@@ -2,3 +2,17 @@
 **/target/
 /target/
 */target/
+
+.idea/
+.idea/modules.xml
+.idea/*.xml
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/dictionaries
+.idea/vcs.xml
+.idea/jsLibraryMappings.xml
+.idea/datasources.xml
+.idea/dataSources.ids
+.idea/sqlDataSources.xml
+.idea/dynamic.xml
+.idea/uiDesigner.xml
