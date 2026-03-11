@@ -1,0 +1,41 @@
+spring:
+  config:
+    activate:
+      on-profile: default
+  application:
+    name: AdminServer
+  security:
+    user:
+      name: admin
+      password: admin
+  boot:
+    admin:
+      ui:
+        title: Cache Monitoring Admin
+        brand: <img src="assets/img/icon-spring-boot-admin.svg"><span>Cache Monitor</span>
+      monitor:
+        status-interval: 10000
+        info-interval: 10000
+      discovery:
+        enabled: false
+      instance-auth:
+        enabled: true  # Включить аутентификацию для инстансов
+        default-user-name: admin
+        default-user-password: admin
+
+server:
+  port: 8081  # Админка на 8081
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    de.codecentric.boot.admin: DEBUG  # Логи админки
+    org.springframework.boot.context.config: DEBUG

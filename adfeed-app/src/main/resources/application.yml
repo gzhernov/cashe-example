@@ -1,0 +1,74 @@
+spring:
+  application:
+    name: AdFeedApplication
+
+  cache:
+    type: caffeine
+    cache-names:
+      - clientProfiles
+      - accountInfo
+      - activeCampaigns
+      - audienceSegments
+      - performanceReports
+      - billingInfo
+      - targetingSettings
+      - notificationSettings
+      - topCreatives
+      - dailyAnalytics
+    caffeine:
+      spec: maximumSize=100,expireAfterWrite=300s,recordStats
+
+  boot:
+    admin:
+      client:
+        url: http://localhost:8081
+        username: admin
+        password: admin
+        instance:
+          name: AdFeed Application
+          service-url: http://localhost:8080
+          management-url: http://localhost:8080/actuator
+          health-url: http://localhost:8080/actuator/health
+          metadata:
+            user.name: admin
+            user.password: admin
+        enabled: true
+        period: 10000
+        connect-timeout: 5000
+        read-timeout: 5000
+        register-once: true
+        auto-registration: true
+
+# Настройки Feign клиентов
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 10000
+        loggerLevel: full
+      backoffice-client:
+        url: http://localhost:8082  # URL backoffice сервиса
+        connectTimeout: 3000
+        readTimeout: 5000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+
+server:
+  port: 8080
+
+logging:
+  level:
+    de.codecentric.boot.admin.client: DEBUG
+    com.example.app: DEBUG
+    com.example.app.client: DEBUG
+    org.springframework.cache: TRACE
+    feign: DEBUG

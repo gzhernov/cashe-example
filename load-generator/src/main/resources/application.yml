@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: LoadGenerator
+
+  boot:
+    admin:
+      client:
+        url: http://localhost:8081  # URL сервера Admin
+        enabled: true
+
+server:
+  port: 8083
+
+# Настройки генератора нагрузки
+load:
+  generator:
+    target-url: http://localhost:8080  # URL adfeed-app сервиса
+    threads: 2                          # Количество потоков
+    requests-per-second: 5              # Запросов в секунду
+    min-client-id: 1                     # Минимальный ID клиента
+    max-client-id: 100                    # Максимальный ID клиента
+    enabled: true                         # Включить генератор при старте
+    run-duration-minutes: 3               # 0 = бесконечно
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.example.loadgenerator: DEBUG
+    org.springframework.web.client: INFO
