@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: AdFeedApplication
+  cache:
+    type: caffeine
+    cache-names:
+      - clientProfiles
+    caffeine:
+      spec: maximumSize=500,expireAfterWrite=60s
+  boot:
+    admin:
+      client:
+        url: http://localhost:8081
+        username: admin
+        password: admin
+        instance:
+          name: AdFeed Application
+          service-url: http://localhost:8080
+          management-url: http://localhost:8080/actuator
+          health-url: http://localhost:8080/actuator/health
+          metadata:
+            user.name: admin
+            user.password: admin
+        enabled: true
+        period: 10000  # Период проверки регистрации
+        connect-timeout: 5000
+        read-timeout: 5000
+        # Добавьте эти настройки:
+        register-once: true  # Регистрироваться только один раз
+        auto-registration: true  # Автоматическая регистрация при старте
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+
+server:
+  port: 8080  # Клиент на 8080
+
+logging:
+  level:
+    de.codecentric.boot.admin.client: DEBUG  # Логи регистрации
+    com.example.adfeed: DEBUG
