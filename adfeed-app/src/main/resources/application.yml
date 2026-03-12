@@ -1,22 +1,26 @@
 spring:
   application:
     name: AdFeedApplication
-
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+      password:  # если требуется
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1ms
   cache:
-    type: caffeine
-    cache-names:
-      - clientProfiles
-      - accountInfo
-      - activeCampaigns
-      - audienceSegments
-      - performanceReports
-      - billingInfo
-      - targetingSettings
-      - notificationSettings
-      - topCreatives
-      - dailyAnalytics
-    caffeine:
-      spec: maximumSize=100,expireAfterWrite=300s,recordStats
+    type: redis
+    redis:
+      time-to-live: 300000  # 5 минут в миллисекундах (значение по умолчанию)
+      cache-null-values: false
+      key-prefix: "adfeed:"
+      use-key-prefix: true
 
   boot:
     admin:
@@ -48,7 +52,7 @@ feign:
         readTimeout: 10000
         loggerLevel: full
       backoffice-client:
-        url: http://localhost:8082  # URL backoffice сервиса
+        url: http://localhost:8082
         connectTimeout: 3000
         readTimeout: 5000
 
@@ -61,6 +65,10 @@ management:
   endpoint:
     health:
       show-details: always
+  metrics:
+    export:
+      redis:
+        enabled: true
 
 server:
   port: 8080
@@ -72,3 +80,4 @@ logging:
     com.example.app.client: DEBUG
     org.springframework.cache: TRACE
     feign: DEBUG
+    org.springframework.data.redis: DEBUG
