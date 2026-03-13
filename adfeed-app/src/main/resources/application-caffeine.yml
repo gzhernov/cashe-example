@@ -1,0 +1,34 @@
+spring:
+  cache:
+    type: caffeine
+    cache-names:
+      - clientProfiles
+      - accountInfo
+      - activeCampaigns
+      - audienceSegments
+      - performanceReports
+      - billingInfo
+      - targetingSettings
+      - notificationSettings
+      - topCreatives
+      - dailyAnalytics
+    caffeine:
+      spec: maximumSize=100,expireAfterWrite=300s,recordStats
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    de.codecentric.boot.admin.client: DEBUG
+    com.example.app: DEBUG
+    com.example.app.client: DEBUG
+    org.springframework.cache: TRACE
+    feign: DEBUG

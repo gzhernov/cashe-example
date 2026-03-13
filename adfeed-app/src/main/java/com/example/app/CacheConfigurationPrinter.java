@@ -4,9 +4,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.caffeine.CaffeineCacheManager;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.data.redis.cache.RedisCacheManager;
-import org.springframework.data.redis.core.RedisCallback;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -16,31 +16,74 @@ public class CacheConfigurationPrinter implements CommandLineRunner {
     @Autowired
     private CacheManager cacheManager;
 
-    @Autowired(required = false)
-    private RedisTemplate<String, Object> redisTemplate;
-
     @Override
     public void run(String... args) {
-        log.info("=== КОНФИГУРАЦИЯ КЭША (REDIS) ===");
+        log.info("=== КОНФИГУРАЦИЯ КЭША ===");
         log.info("CacheManager class: {}", cacheManager.getClass().getName());
 
-        if (cacheManager instanceof RedisCacheManager) {
+        if (cacheManager instanceof CaffeineCacheManager) {
+            CaffeineCacheManager cm = (CaffeineCacheManager) cacheManager;
+            log.info("Тип: CaffeineCacheManager");
+            log.info("Cache names: {}", cm.getCacheNames());
+
+            // Попытка получить спецификацию Caffeine
+            try {
+                java.lang.reflect.Field field = CaffeineCacheManager.class.getDeclaredField("cacheSpecification");
+                field.setAccessible(true);
+                String spec = (String) field.get(cm);
+                log.info("Caffeine spec: {}", spec != null ? spec : "не задана (будет использована дефолтная)");
+            } catch (Exception e) {
+                log.info("Caffeine spec: не удалось прочитать");
+            }
+
+            try {
+                java.lang.reflect.Field field = CaffeineCacheManager.class.getDeclaredField("allowNullValues");
+                field.setAccessible(true);
+                boolean allowNull = field.getBoolean(cm);
+                log.info("Allow null values: {}", allowNull);
+            } catch (Exception e) {
+                log.info("Allow null values: неизвестно");
+            }
+
+            log.info("Caffeine успешно используется!");
+
+        } else if (cacheManager instanceof ConcurrentMapCacheManager) {
+            ConcurrentMapCacheManager cm = (ConcurrentMapCacheManager) cacheManager;
+            log.info("Тип: ConcurrentMapCacheManager (default)");
+            log.info("Cache names: {}", cm.getCacheNames());
+            log.info("Allow null values: {}", cm.isAllowNullValues());
+            log.info("Store by value: {}", cm.isStoreByValue());
+
+            // Информация о режиме (статический/динамический)
+            try {
+                java.lang.reflect.Field field = ConcurrentMapCacheManager.class.getDeclaredField("dynamic");
+                field.setAccessible(true);
+                boolean isDynamic = field.getBoolean(cm);
+                log.info("Dynamic mode: {} ({} создание кэшей)",
+                        isDynamic,
+                        isDynamic ? "динамическое" : "статическое");
+            } catch (Exception e) {
+                log.info("Dynamic mode: неизвестно");
+            }
+        } else if (cacheManager instanceof RedisCacheManager) {
             RedisCacheManager cm = (RedisCacheManager) cacheManager;
             log.info("Тип: RedisCacheManager");
             log.info("Cache names: {}", cm.getCacheNames());
 
-            try {
-                // Получаем информацию о Redis сервере
-                if (redisTemplate != null) {
-                    redisTemplate.execute((RedisCallback<Object>) connection -> {
-                        log.info("Redis server version: {}", connection.info("server").getProperty("redis_version"));
-                        log.info("Redis connected to: {}", connection.getClientName());
-                        return null;
-                    });
-                }
-            } catch (Exception e) {
-                log.warn("Не удалось получить информацию о Redis: {}", e.getMessage());
-            }
+            log.info("📦 ПРОВАЙДЕР: Redis (Централизованный)");
+            log.info("   • Скорость: ⭐ Средняя (сетевая задержка)");
+            log.info("   • Распределение: ✅ Общий для всех инстансов");
+            log.info("   • Персистентность: ✅ Да");
+            log.info("   • Особенности: TTL, префиксы ключей");
+
+//            // Получаем конфигурацию через рефлексию (опционально)
+//            try {
+//                var field = RedisCacheManager.class.getDeclaredField("defaultCacheConfig");
+//                field.setAccessible(true);
+//                log.info("   • TTL по умолчанию: 5 минут");
+//            } catch (Exception e) {
+//                // Игнорируем
+//            }
 
             log.info("Redis успешно используется как провайдер кэша!");
         }

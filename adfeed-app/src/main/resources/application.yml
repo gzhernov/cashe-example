@@ -1,27 +1,11 @@
+server:
+  port: 8080
+
 spring:
+  profiles:
+    active: default  # caffeine или redis
   application:
     name: AdFeedApplication
-  data:
-    redis:
-      host: localhost
-      port: 6379
-      database: 0
-      password:  # если требуется
-      timeout: 2000ms
-      lettuce:
-        pool:
-          max-active: 8
-          max-idle: 8
-          min-idle: 0
-          max-wait: -1ms
-  cache:
-    type: redis
-    redis:
-      time-to-live: 300000  # 5 минут в миллисекундах (значение по умолчанию)
-      cache-null-values: false
-      key-prefix: "adfeed:"
-      use-key-prefix: true
-
   boot:
     admin:
       client:
@@ -36,7 +20,7 @@ spring:
           metadata:
             user.name: admin
             user.password: admin
-        enabled: true
+        enabled: false
         period: 10000
         connect-timeout: 5000
         read-timeout: 5000
@@ -55,29 +39,3 @@ feign:
         url: http://localhost:8082
         connectTimeout: 3000
         readTimeout: 5000
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: '*'
-      base-path: /actuator
-  endpoint:
-    health:
-      show-details: always
-  metrics:
-    export:
-      redis:
-        enabled: true
-
-server:
-  port: 8080
-
-logging:
-  level:
-    de.codecentric.boot.admin.client: DEBUG
-    com.example.app: DEBUG
-    com.example.app.client: DEBUG
-    org.springframework.cache: TRACE
-    feign: DEBUG
-    org.springframework.data.redis: DEBUG
