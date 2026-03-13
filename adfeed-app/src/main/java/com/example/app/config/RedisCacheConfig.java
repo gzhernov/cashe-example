@@ -2,12 +2,9 @@ package com.example.app.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.redisson.Redisson;
-import org.redisson.api.RedissonClient;
-import org.redisson.config.Config;
-import org.redisson.spring.cache.CacheConfig;
-import org.redisson.spring.cache.RedissonSpringCacheManager;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
@@ -44,34 +41,51 @@ public class RedisCacheConfig {
     @Value("${spring.redis.database:0}")
     private int redisDatabase;
 
-    @Bean
+    @Bean("redisObjectMapper")
     public ObjectMapper redisObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+
+        // ВАЖНО: Настраиваем полиморфную типизацию для сохранения информации о классах
+        BasicPolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
+                .allowIfSubType("com.example.core.model") // Разрешаем все классы из этого пакета
+                .allowIfSubType("java.util") // Разрешаем коллекции
+                .allowIfSubType("java.time") // Разрешаем временные типы
+                .build();
+
+        mapper.activateDefaultTyping(
+                ptv,
+                ObjectMapper.DefaultTyping.NON_FINAL, // Сохраняем типы для всех нефинальных классов
+                com.fasterxml.jackson.annotation.JsonTypeInfo.As.PROPERTY // Как JSON свойство
+        );
+
         return mapper;
     }
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(redisHost, redisPort);
-        config.setDatabase(redisDatabase);
-        if (redisPassword != null && !redisPassword.isEmpty()) {
-            config.setPassword(redisPassword);
-        }
+//        config.setDatabase(redisDatabase);
+//        if (redisPassword != null && !redisPassword.isEmpty()) {
+//            config.setPassword(redisPassword);
+//        }
         return new LettuceConnectionFactory(config);
     }
 
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory,
-                                                       ObjectMapper redisObjectMapper) {
+                                                       @Qualifier("redisObjectMapper") ObjectMapper redisObjectMapper) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
         template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new GenericJackson2JsonRedisSerializer(redisObjectMapper));
+
+        GenericJackson2JsonRedisSerializer serializer =
+                new GenericJackson2JsonRedisSerializer(redisObjectMapper);
+
+        template.setValueSerializer(serializer);
         template.setHashKeySerializer(new StringRedisSerializer());
-        template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer(redisObjectMapper));
+        template.setHashValueSerializer(serializer);
         template.afterPropertiesSet();
         return template;
     }
@@ -79,17 +93,15 @@ public class RedisCacheConfig {
     @Bean
     @Primary
     public CacheManager cacheManager(RedisConnectionFactory connectionFactory,
-                                     ObjectMapper redisObjectMapper) {
+                                     @Qualifier("redisObjectMapper") ObjectMapper redisObjectMapper) {
         RedisCacheConfiguration defaultCacheConfig = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofMinutes(5)) // TTL по умолчанию
+                .entryTtl(Duration.ofMinutes(5))
                 .disableCachingNullValues()
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(
                         new GenericJackson2JsonRedisSerializer(redisObjectMapper)));
 
-        // Индивидуальные настройки для разных кэшей
         Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
-
         cacheConfigurations.put("clientProfiles", defaultCacheConfig.entryTtl(Duration.ofMinutes(10)));
         cacheConfigurations.put("accountInfo", defaultCacheConfig.entryTtl(Duration.ofMinutes(5)));
         cacheConfigurations.put("activeCampaigns", defaultCacheConfig.entryTtl(Duration.ofMinutes(3)));
@@ -106,41 +118,5 @@ public class RedisCacheConfig {
                 .withInitialCacheConfigurations(cacheConfigurations)
                 .transactionAware()
                 .build();
-    }
-
-    // Альтернативный вариант с Redisson (более продвинутый)
-    @Bean
-    public RedissonClient redissonClient() {
-        Config config = new Config();
-        config.useSingleServer()
-                .setAddress("redis://" + redisHost + ":" + redisPort)
-                .setDatabase(redisDatabase)
-                .setConnectionPoolSize(10)
-                .setConnectionMinimumIdleSize(5);
-
-        if (redisPassword != null && !redisPassword.isEmpty()) {
-            config.useSingleServer().setPassword(redisPassword);
-        }
-
-        return Redisson.create(config);
-    }
-
-    @Bean
-    public CacheManager redissonCacheManager(RedissonClient redissonClient) {
-        Map<String, CacheConfig> config = new HashMap<>();
-
-        // Настройки TTL и max idle для каждого кэша
-        config.put("clientProfiles", new CacheConfig(10 * 60 * 1000, 5 * 60 * 1000)); // 10 min ttl, 5 min max idle
-        config.put("accountInfo", new CacheConfig(5 * 60 * 1000, 3 * 60 * 1000));
-        config.put("activeCampaigns", new CacheConfig(3 * 60 * 1000, 2 * 60 * 1000));
-        config.put("audienceSegments", new CacheConfig(15 * 60 * 1000, 10 * 60 * 1000));
-        config.put("performanceReports", new CacheConfig(2 * 60 * 1000, 1 * 60 * 1000));
-        config.put("billingInfo", new CacheConfig(5 * 60 * 1000, 3 * 60 * 1000));
-        config.put("targetingSettings", new CacheConfig(30 * 60 * 1000, 15 * 60 * 1000));
-        config.put("notificationSettings", new CacheConfig(30 * 60 * 1000, 15 * 60 * 1000));
-        config.put("topCreatives", new CacheConfig(10 * 60 * 1000, 5 * 60 * 1000));
-        config.put("dailyAnalytics", new CacheConfig(1 * 60 * 1000, 30 * 1000));
-
-        return new RedissonSpringCacheManager(redissonClient, config);
     }
 }

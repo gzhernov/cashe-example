@@ -5,7 +5,9 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-@FeignClient(name = "backoffice-client", url = "${feign.client.config.backoffice-client.url}")
+@FeignClient(name = "backoffice-client",
+        url = "${feign.client.config.backoffice-client.url}",
+        configuration = com.example.app.config.FeignClientConfig.class)
 public interface BackofficeClient {
 
     @GetMapping("/api/core/clients/{clientId}/profile")

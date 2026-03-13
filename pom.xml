@@ -21,7 +21,7 @@
         <java.version>17</java.version>
         <spring-boot-admin.version>3.1.5</spring-boot-admin.version>
         <lombok.version>1.18.30</lombok.version>
-        <redisson.version>3.24.3</redisson.version>
+<!--        <redisson.version>3.24.3</redisson.version>-->
     </properties>
 
     <modules>
@@ -47,16 +47,16 @@
             </dependency>
 
             <!-- Redisson -->
-            <dependency>
-                <groupId>org.redisson</groupId>
-                <artifactId>redisson-spring-boot-starter</artifactId>
-                <version>${redisson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.redisson</groupId>
-                <artifactId>redisson-spring-data-31</artifactId>
-                <version>${redisson.version}</version>
-            </dependency>
+<!--            <dependency>-->
+<!--                <groupId>org.redisson</groupId>-->
+<!--                <artifactId>redisson-spring-boot-starter</artifactId>-->
+<!--                <version>${redisson.version}</version>-->
+<!--            </dependency>-->
+<!--            <dependency>-->
+<!--                <groupId>org.redisson</groupId>-->
+<!--                <artifactId>redisson-spring-data-31</artifactId>-->
+<!--                <version>${redisson.version}</version>-->
+<!--            </dependency>-->
 
             <!-- Internal modules -->
             <dependency>
@@ -64,7 +64,25 @@
                 <artifactId>adfeed-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <!-- Принудительно исключаем Redisson -->
+            <dependency>
+                <groupId>org.redisson</groupId>
+                <artifactId>redisson-spring-boot-starter</artifactId>
+                <version>999</version> <!-- Несуществующая версия -->
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.redisson</groupId>
+                <artifactId>redisson-spring-data-31</artifactId>
+                <version>999</version>
+                <scope>provided</scope>
+            </dependency>
+
+
         </dependencies>
+
+
     </dependencyManagement>
 
     <build>

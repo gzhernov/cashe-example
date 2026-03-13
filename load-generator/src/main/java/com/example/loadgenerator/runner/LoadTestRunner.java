@@ -66,7 +66,7 @@ public class LoadTestRunner implements CommandLineRunner {
         // Запускаем задачу для вывода статистики каждые 10 секунд
         statsTask = taskScheduler.scheduleAtFixedRate(
                 this::printStatistics,
-                Duration.ofSeconds(10)
+                Duration.ofSeconds(60)
         );
 
         // Добавляем задачу для проверки длительности выполнения
