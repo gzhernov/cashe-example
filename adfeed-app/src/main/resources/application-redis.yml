@@ -1,3 +1,8 @@
+redis:
+  health-check:
+    interval: 5000        # значение в миллисекундах (уже число, не строка)
+    failure-threshold: 3
+
 spring:
   data:
     redis:
@@ -5,13 +10,15 @@ spring:
       port: 6379
       database: 0
       password:  # если требуется
-      timeout: 2000ms
+      timeout: 200ms
       lettuce:
         pool:
           max-active: 8
           max-idle: 8
           min-idle: 0
           max-wait: -1ms
+      health-check:
+        interval: 5000
   cache:
     type: redis
     redis:
