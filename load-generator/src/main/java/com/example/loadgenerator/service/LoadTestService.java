@@ -61,9 +61,16 @@ public class LoadTestService {
     }
 
     private long generateRandomClientId() {
-        return config.getMinClientId() + random.nextInt(
-                config.getMaxClientId() - config.getMinClientId() + 1
-        );
+        double mean = 20.0; // среднее значение
+        double stdDev = 15.0; // стандартное отклонение
+
+        long clientId;
+        do {
+            // Генерируем значение по Гауссу
+            clientId = (long) (random.nextGaussian() * stdDev + mean);
+        } while (clientId < config.getMinClientId() || clientId > config.getMaxClientId());
+
+        return clientId;
     }
 
     public void printStatistics() {
