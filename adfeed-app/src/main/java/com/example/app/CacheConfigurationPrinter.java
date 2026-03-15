@@ -1,11 +1,14 @@
 package com.example.app;
 
+import com.example.app.config.MemcachedCache;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
+import org.springframework.cache.support.SimpleCacheManager;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.stereotype.Component;
 
@@ -86,6 +89,20 @@ public class CacheConfigurationPrinter implements CommandLineRunner {
 //            }
 
             log.info("Redis успешно используется как провайдер кэша!");
+        } else if (cacheManager instanceof SimpleCacheManager) {
+            log.info("Тип: Memcached (Распределенный)");
+            log.info("Преимущества: распределенный, низкое потребление памяти");
+            log.info("Недостатки: требует отдельного сервера, ограниченные структуры данных");
+
+            // Детальная информация о Memcached кэшах
+            log.info("Настроенные кэши:");
+            for (String cacheName : cacheManager.getCacheNames()) {
+                Cache cache = cacheManager.getCache(cacheName);
+//                if (cache instanceof MemcachedCache) {
+//                    log.info("  - {} (TTL: {}с)", cacheName,
+//                            ((MemcachedCache) cache).getExpiration());
+//                }
+            }
         }
 
         log.info("===========================");

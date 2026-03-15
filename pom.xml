@@ -21,7 +21,9 @@
         <java.version>17</java.version>
         <spring-boot-admin.version>3.1.5</spring-boot-admin.version>
         <lombok.version>1.18.30</lombok.version>
-<!--        <redisson.version>3.24.3</redisson.version>-->
+        <memcached.version>4.0.0</memcached.version>
+        <xmemcached.version>2.4.8</xmemcached.version>
+
     </properties>
 
     <modules>
@@ -46,18 +48,6 @@
                 <version>${spring-boot-admin.version}</version>
             </dependency>
 
-            <!-- Redisson -->
-<!--            <dependency>-->
-<!--                <groupId>org.redisson</groupId>-->
-<!--                <artifactId>redisson-spring-boot-starter</artifactId>-->
-<!--                <version>${redisson.version}</version>-->
-<!--            </dependency>-->
-<!--            <dependency>-->
-<!--                <groupId>org.redisson</groupId>-->
-<!--                <artifactId>redisson-spring-data-31</artifactId>-->
-<!--                <version>${redisson.version}</version>-->
-<!--            </dependency>-->
-
             <!-- Internal modules -->
             <dependency>
                 <groupId>com.example</groupId>
@@ -79,6 +69,13 @@
                 <scope>provided</scope>
             </dependency>
 
+
+            <!-- Memcached -->
+            <dependency>
+                <groupId>com.googlecode.xmemcached</groupId>
+                <artifactId>xmemcached</artifactId>
+                <version>${xmemcached.version}</version>
+            </dependency>
 
         </dependencies>
 

@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Profile;
 
 @Configuration
 @Profile("caffeine")
-public class CacheConfig {
+public class CacheConfig implements CacheConfigMarker {
 
     @Bean
     @Primary

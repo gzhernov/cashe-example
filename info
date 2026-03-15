@@ -1,2 +1,7 @@
 reddis
 http://localhost:8085
+
+
+
+docker-compose -f docker-compose-memcached.yml up -d
+docker-compose -f docker-compose-redis.yml up -d

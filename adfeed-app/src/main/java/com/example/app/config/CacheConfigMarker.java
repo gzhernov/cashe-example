@@ -1,4 +1,4 @@
 package com.example.app.config;
 
-public class CacheConfigMarker {
+public interface CacheConfigMarker {
 }

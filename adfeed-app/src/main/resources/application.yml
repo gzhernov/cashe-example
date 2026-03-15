@@ -3,7 +3,7 @@ server:
 
 spring:
   profiles:
-    active: default  # caffeine или redis
+    active: redis  # memcached, caffeine или redis
   application:
     name: AdFeedApplication
   boot:

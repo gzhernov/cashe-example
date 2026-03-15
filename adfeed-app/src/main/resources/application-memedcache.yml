@@ -1,0 +1,20 @@
+memcached:
+  servers: localhost:11211
+  connection-pool-size: 10
+  timeout: 3000  # op timeout в мс
+  connect-timeout: 3000
+  heal-session-interval: 5000  # интервал восстановления сессий
+  failure-mode: false  # не продолжать при ошибках
+  
+  # TTL для разных кэшей (в секундах)
+  ttl:
+    clientProfiles: 600
+    accountInfo: 300
+    activeCampaigns: 180
+    audienceSegments: 900
+    performanceReports: 120
+    billingInfo: 300
+    targetingSettings: 1800
+    notificationSettings: 1800
+    topCreatives: 600
+    dailyAnalytics: 60

@@ -28,7 +28,7 @@ import java.util.Map;
 
 @Configuration
 @Profile("redis")
-public class RedisCacheConfig {
+public class RedisCacheConfig implements CacheConfigMarker {
 
     @Value("${spring.redis.host:localhost}")
     private String redisHost;

@@ -1,0 +1,36 @@
+version: '3.8'
+
+name: memcached-stack
+
+services:
+  # Memcached сервер
+  memcached:
+    image: memcached:1.6-alpine
+    container_name: adfeed-memcached
+    ports:
+      - "11211:11211"  # Порт для приложения
+    command: ["memcached", "-m", "256", "-c", "1024", "-v"]
+    restart: always
+    networks:
+      - adfeed-network
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "11211"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Веб-админка для Memcached
+  memcached-admin:
+    image: moonbuggy2000/phpmemcachedadmin:latest
+    container_name: adfeed-memcached-admin
+    ports:
+      - "8086:8080"  # Веб-интерфейс на порту 8086
+    depends_on:
+      - memcached
+    restart: always
+    networks:
+      - adfeed-network
+
+networks:
+  adfeed-network:
+    driver: bridge

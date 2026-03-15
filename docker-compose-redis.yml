@@ -1,6 +1,8 @@
 # docker-compose.yml
 version: '3.8'
 
+name: redis-stack
+
 services:
   redis:
     image: redis:7-alpine
